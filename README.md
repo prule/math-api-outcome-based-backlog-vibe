@@ -23,5 +23,5 @@ Needs JDK 25.
 
 ```bash
 ./gradlew build     # tests, ArchUnit layer rules, Spotless format check
-./gradlew bootRun   # serves on :8080; health at /actuator/health
+./gradlew bootRun   # serves on :8080; health at /actuator/health, API docs at /swagger-ui.html (spec: /v3/api-docs)
 ```

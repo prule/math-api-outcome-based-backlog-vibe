@@ -47,7 +47,8 @@ public enum Operation {
         throw new UnknownOperationException(supportedNames());
     }
 
-    static String supportedNames() {
+    /** The Operation names in declaration order, comma separated. */
+    public static String supportedNames() {
         return Arrays.stream(values()).map(Enum::name).collect(Collectors.joining(", "));
     }
 }
