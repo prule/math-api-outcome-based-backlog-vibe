@@ -1,5 +1,6 @@
 package com.paulrule.mathapi.adapter.in.web;
 
+import com.paulrule.mathapi.domain.DivisionByZeroException;
 import com.paulrule.mathapi.domain.UnknownOperationException;
 import java.net.URI;
 import java.util.stream.Collectors;
@@ -29,10 +30,16 @@ class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
     static final URI INVALID_REQUEST = URI.create("/problems/invalid-request");
     static final URI UNKNOWN_OPERATION = URI.create("/problems/unknown-operation");
+    static final URI DIVISION_BY_ZERO = URI.create("/problems/division-by-zero");
 
     @ExceptionHandler
     ProblemDetail unknownOperation(UnknownOperationException e) {
         return problem(HttpStatus.BAD_REQUEST, UNKNOWN_OPERATION, "Unknown operation", e.getMessage());
+    }
+
+    @ExceptionHandler
+    ProblemDetail divisionByZero(DivisionByZeroException e) {
+        return problem(HttpStatus.UNPROCESSABLE_CONTENT, DIVISION_BY_ZERO, "Division by zero", e.getMessage());
     }
 
     /** Anything unforeseen still answers in the API's error format, without leaking the cause. */

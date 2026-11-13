@@ -65,6 +65,18 @@ class CalculationControllerTest {
     }
 
     @Test
+    void dividesToThirtyFourSignificantDigits_BR3() throws Exception {
+        postJson("{\"operation\":\"DIVIDE\",\"a\":1,\"b\":\"3\"}")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").value("0." + "3".repeat(34)));
+    }
+
+    @Test
+    void rejectsDivisionByZeroAsUnprocessable_BR2() throws Exception {
+        expectProblem(postJson("{\"operation\":\"DIVIDE\",\"a\":1,\"b\":\"0.00\"}"), 422, "/problems/division-by-zero");
+    }
+
+    @Test
     void rejectsMalformedJson() throws Exception {
         expectProblem(postJson("{\"operation\":\"ADD\","), 400, "/problems/invalid-request");
     }
@@ -93,7 +105,7 @@ class CalculationControllerTest {
     @Test
     void rejectsAnUnknownOperation() throws Exception {
         expectProblem(postJson("{\"operation\":\"FROBNICATE\",\"a\":1,\"b\":2}"), 400, "/problems/unknown-operation")
-                .andExpect(jsonPath("$.detail").value("Operation must be one of: ADD, SUBTRACT, MULTIPLY."));
+                .andExpect(jsonPath("$.detail").value("Operation must be one of: ADD, SUBTRACT, MULTIPLY, DIVIDE."));
     }
 
     @Test

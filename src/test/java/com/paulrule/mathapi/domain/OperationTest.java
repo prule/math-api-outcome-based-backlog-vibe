@@ -16,7 +16,7 @@ class OperationTest {
     void rejectsANameInTheWrongCaseOrUnknown() {
         assertThatThrownBy(() -> Operation.named("add"))
                 .isInstanceOf(UnknownOperationException.class)
-                .hasMessage("Operation must be one of: ADD, SUBTRACT, MULTIPLY.");
+                .hasMessage("Operation must be one of: ADD, SUBTRACT, MULTIPLY, DIVIDE.");
         assertThatThrownBy(() -> Operation.named("FROBNICATE")).isInstanceOf(UnknownOperationException.class);
     }
 }

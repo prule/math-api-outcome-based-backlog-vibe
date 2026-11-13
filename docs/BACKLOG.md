@@ -14,7 +14,7 @@
 |---|---------|--------|----|
 | 1 | Developers can build, check and ship the service | Done | #1 |
 | 2 | Clients get exact results for add, subtract and multiply | Done | #2 |
-| 3 | Clients can divide | Not started | |
+| 3 | Clients can divide | In progress | |
 | 4 | Hostile operands cannot take the service down | Not started | |
 | 5 | Developers can integrate from the API docs alone | Not started | |
 | 5a | API docs are not public in production | Not started | |

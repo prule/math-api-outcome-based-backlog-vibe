@@ -1,6 +1,7 @@
 package com.paulrule.mathapi.domain;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -22,6 +23,15 @@ public enum Operation {
         @Override
         BigDecimal apply(BigDecimal a, BigDecimal b) {
             return a.multiply(b);
+        }
+    },
+    DIVIDE {
+        @Override
+        BigDecimal apply(BigDecimal a, BigDecimal b) {
+            if (b.signum() == 0) {
+                throw new DivisionByZeroException(); // BR-2: every zero form has signum 0
+            }
+            return a.divide(b, MathContext.DECIMAL128); // BR-3
         }
     };
 
