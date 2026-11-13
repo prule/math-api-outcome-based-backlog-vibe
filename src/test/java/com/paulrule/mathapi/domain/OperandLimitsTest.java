@@ -36,7 +36,7 @@ class OperandLimitsTest {
     void rejectsAnOperandPastTheScaleLimit_BR1(String operand) {
         assertThatThrownBy(() -> add(operand, "0"))
                 .isInstanceOf(OperandOutOfRangeException.class)
-                .hasMessageContaining("'a'");
+                .hasMessage("Operand 'a' has a scale outside ±1000.");
         assertThatThrownBy(() -> add("0", operand))
                 .isInstanceOf(OperandOutOfRangeException.class)
                 .hasMessageContaining("'b'");
@@ -44,7 +44,9 @@ class OperandLimitsTest {
 
     @Test
     void rejectsAnOperandOfOneHundredAndOneDigits_BR1() {
-        assertThatThrownBy(() -> add("9".repeat(101), "0")).isInstanceOf(OperandOutOfRangeException.class);
+        assertThatThrownBy(() -> add("9".repeat(101), "0"))
+                .isInstanceOf(OperandOutOfRangeException.class)
+                .hasMessage("Operand 'a' has more than 100 significant digits.");
         assertThatThrownBy(() -> add("0." + "9".repeat(101), "0")).isInstanceOf(OperandOutOfRangeException.class);
     }
 

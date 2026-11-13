@@ -34,9 +34,10 @@ class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
     ApiExceptionHandler(
             @Value("${spring.jackson.factory.constraints.read.max-document-length}") long maxBodyBytes,
-            @Value("${spring.jackson.factory.constraints.read.max-string-length}") int maxValueLength,
+            @Value("${spring.jackson.factory.constraints.read.max-string-length}") int maxStringLength,
+            @Value("${spring.jackson.factory.constraints.read.max-number-length}") int maxNumberLength,
             @Value("${spring.jackson.factory.constraints.read.max-nesting-depth}") int maxNestingDepth) {
-        this.requestLimits = new RequestLimits(maxBodyBytes, maxValueLength, maxNestingDepth);
+        this.requestLimits = new RequestLimits(maxBodyBytes, maxStringLength, maxNumberLength, maxNestingDepth);
     }
 
     static final URI INVALID_REQUEST = URI.create("/problems/invalid-request");

@@ -11,12 +11,14 @@ import tools.jackson.core.exc.StreamConstraintsException;
 class RequestLimits {
 
     private final long maxBodyBytes;
-    private final int maxValueLength;
+    private final int maxStringLength;
+    private final int maxNumberLength;
     private final int maxNestingDepth;
 
-    RequestLimits(long maxBodyBytes, int maxValueLength, int maxNestingDepth) {
+    RequestLimits(long maxBodyBytes, int maxStringLength, int maxNumberLength, int maxNestingDepth) {
         this.maxBodyBytes = maxBodyBytes;
-        this.maxValueLength = maxValueLength;
+        this.maxStringLength = maxStringLength;
+        this.maxNumberLength = maxNumberLength;
         this.maxNestingDepth = maxNestingDepth;
     }
 
@@ -26,14 +28,16 @@ class RequestLimits {
             return Optional.empty();
         }
         // Jackson has one exception type for every limit; its message is the only way to tell them apart.
-        // RequestLimitsTest fails if a Jackson upgrade changes these wordings.
+        // HostileRequestTest fails if a Jackson upgrade changes these wordings.
         String message = limit.getOriginalMessage();
         if (message.startsWith("Document length")) {
             return Optional.of("The request body is larger than " + maxBodyBytes + " bytes.");
         }
-        if (message.startsWith("Number value length") || message.startsWith("String value length")) {
-            return Optional.of(
-                    "A JSON number or string in the request is longer than " + maxValueLength + " characters.");
+        if (message.startsWith("Number value length")) {
+            return Optional.of("A JSON number in the request is longer than " + maxNumberLength + " characters.");
+        }
+        if (message.startsWith("String value length")) {
+            return Optional.of("A JSON string in the request is longer than " + maxStringLength + " characters.");
         }
         if (message.startsWith("Document nesting depth")) {
             return Optional.of("The request body is nested more than " + maxNestingDepth + " levels deep.");

@@ -18,7 +18,7 @@ import org.springframework.test.web.servlet.ResultActions;
 /** Hostile requests are rejected by the limit they break (PRD §3.2 request limits, BR-1), before any arithmetic. */
 @WebMvcTest(CalculationController.class)
 @Import(UseCaseConfig.class)
-class RequestLimitsTest {
+class HostileRequestTest {
 
     private static final int MAX_BODY = 16_384;
 
@@ -65,6 +65,21 @@ class RequestLimitsTest {
     @Test
     void acceptsOperandsAtTheLimits_BR1() throws Exception {
         postJson(calculation("\"1E+1000\"", "\"" + "9".repeat(100) + "\"")).andExpect(status().isOk());
+        postJson(calculation("1E-1000", "\"-1E+1000\"")).andExpect(status().isOk());
+    }
+
+    @Test
+    void saysWhichOperandLimitWasBroken_BR1() throws Exception {
+        expectProblem(
+                postJson(calculation("\"" + "9".repeat(101) + "\"", "1")),
+                400,
+                "/problems/operand-out-of-range",
+                "Operand 'a' has more than 100 significant digits.");
+        expectProblem(
+                postJson(calculation("1", "1E+1001")),
+                400,
+                "/problems/operand-out-of-range",
+                "Operand 'b' has a scale outside ±1000.");
     }
 
     @Test
@@ -105,7 +120,7 @@ class RequestLimitsTest {
                 postJson(calculation("1" + "0".repeat(1000), "1")),
                 400,
                 "/problems/invalid-request",
-                "longer than 1000 characters");
+                "JSON number in the request is longer than 1000 characters");
     }
 
     @Test
@@ -114,7 +129,7 @@ class RequestLimitsTest {
                 postJson(calculation("\"" + "1".repeat(1001) + "\"", "1")),
                 400,
                 "/problems/invalid-request",
-                "longer than 1000 characters");
+                "JSON string in the request is longer than 1000 characters");
     }
 
     @Test
