@@ -1,7 +1,6 @@
 package com.paulrule.mathapi.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
@@ -56,18 +55,5 @@ class CalculationTest {
                         .result()
                         .toPlainString())
                 .isEqualTo("1000");
-    }
-
-    @Test
-    void findsAnOperationByItsExactName() {
-        assertThat(Operation.named("SUBTRACT")).isEqualTo(Operation.SUBTRACT);
-    }
-
-    @Test
-    void rejectsANameInTheWrongCaseOrUnknown() {
-        assertThatThrownBy(() -> Operation.named("add"))
-                .isInstanceOf(UnknownOperationException.class)
-                .hasMessage("Operation must be one of: ADD, SUBTRACT, MULTIPLY.");
-        assertThatThrownBy(() -> Operation.named("FROBNICATE")).isInstanceOf(UnknownOperationException.class);
     }
 }

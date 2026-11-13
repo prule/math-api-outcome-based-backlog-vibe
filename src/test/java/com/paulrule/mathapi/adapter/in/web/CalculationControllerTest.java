@@ -82,7 +82,7 @@ class CalculationControllerTest {
         expectProblem(postJson("{\"operation\":\"ADD\",\"a\":\"\",\"b\":1}"), 400, "/problems/invalid-request");
         expectProblem(postJson("{\"a\":1,\"b\":2}"), 400, "/problems/invalid-request");
         expectProblem(postJson("{}"), 400, "/problems/invalid-request")
-                .andExpect(jsonPath("$.detail").value("Missing required field(s): 'a', 'b', 'operation'."));
+                .andExpect(jsonPath("$.detail").value("Missing or empty field(s): 'a', 'b', 'operation'."));
     }
 
     @Test
@@ -107,6 +107,19 @@ class CalculationControllerTest {
                         .contentType(MediaType.TEXT_PLAIN)
                         .content("1+2"))
                 .andExpect(status().isUnsupportedMediaType())
-                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.status").value(415))
+                .andExpect(jsonPath("$.title").isNotEmpty())
+                .andExpect(jsonPath("$.detail").isNotEmpty());
+    }
+
+    @Test
+    void answersAnUnexpectedFailureWithProblemDetailsThatHideTheCause() throws Exception {
+        // the product's scale overflows int; until item 4's operand limits this is an unforeseen ArithmeticException
+        postJson("{\"operation\":\"MULTIPLY\",\"a\":\"1e-1500000000\",\"b\":\"1e-1500000000\"}")
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.status").value(500))
+                .andExpect(jsonPath("$.detail").value("Unexpected error."));
     }
 }
