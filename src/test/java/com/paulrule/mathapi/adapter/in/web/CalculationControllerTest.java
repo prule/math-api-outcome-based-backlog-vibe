@@ -7,6 +7,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.paulrule.mathapi.config.UseCaseConfig;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -65,6 +67,27 @@ class CalculationControllerTest {
     }
 
     @Test
+    void dividesToThirtyFourSignificantDigits_BR3() throws Exception {
+        postJson("{\"operation\":\"DIVIDE\",\"a\":1,\"b\":\"3\"}")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").value("0." + "3".repeat(34)));
+    }
+
+    @Test
+    void dividesExactlyWhenTheResultFits() throws Exception {
+        postJson("{\"operation\":\"DIVIDE\",\"a\":1,\"b\":4}")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").value("0.25"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"0", "\"0\"", "0.00", "\"0.00\"", "-0", "\"-0\""})
+    void rejectsDivisionByAnyZeroAsUnprocessable_BR2(String zero) throws Exception {
+        expectProblem(
+                postJson("{\"operation\":\"DIVIDE\",\"a\":1,\"b\":" + zero + "}"), 422, "/problems/division-by-zero");
+    }
+
+    @Test
     void rejectsMalformedJson() throws Exception {
         expectProblem(postJson("{\"operation\":\"ADD\","), 400, "/problems/invalid-request");
     }
@@ -93,7 +116,7 @@ class CalculationControllerTest {
     @Test
     void rejectsAnUnknownOperation() throws Exception {
         expectProblem(postJson("{\"operation\":\"FROBNICATE\",\"a\":1,\"b\":2}"), 400, "/problems/unknown-operation")
-                .andExpect(jsonPath("$.detail").value("Operation must be one of: ADD, SUBTRACT, MULTIPLY."));
+                .andExpect(jsonPath("$.detail").value("Operation must be one of: ADD, SUBTRACT, MULTIPLY, DIVIDE."));
     }
 
     @Test
