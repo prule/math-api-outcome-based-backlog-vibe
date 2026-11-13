@@ -1,12 +1,14 @@
 package com.paulrule.mathapi.adapter.in.web;
 
 import com.paulrule.mathapi.domain.DivisionByZeroException;
+import com.paulrule.mathapi.domain.OperandOutOfRangeException;
 import com.paulrule.mathapi.domain.UnknownOperationException;
 import java.net.URI;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -28,13 +30,28 @@ class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ApiExceptionHandler.class);
 
+    private final RequestLimits requestLimits;
+
+    ApiExceptionHandler(
+            @Value("${spring.jackson.factory.constraints.read.max-document-length}") long maxBodyBytes,
+            @Value("${spring.jackson.factory.constraints.read.max-string-length}") int maxValueLength,
+            @Value("${spring.jackson.factory.constraints.read.max-nesting-depth}") int maxNestingDepth) {
+        this.requestLimits = new RequestLimits(maxBodyBytes, maxValueLength, maxNestingDepth);
+    }
+
     static final URI INVALID_REQUEST = URI.create("/problems/invalid-request");
     static final URI UNKNOWN_OPERATION = URI.create("/problems/unknown-operation");
+    static final URI OPERAND_OUT_OF_RANGE = URI.create("/problems/operand-out-of-range");
     static final URI DIVISION_BY_ZERO = URI.create("/problems/division-by-zero");
 
     @ExceptionHandler
     ProblemDetail unknownOperation(UnknownOperationException e) {
         return problem(HttpStatus.BAD_REQUEST, UNKNOWN_OPERATION, "Unknown operation", e.getMessage());
+    }
+
+    @ExceptionHandler
+    ProblemDetail operandOutOfRange(OperandOutOfRangeException e) {
+        return problem(HttpStatus.BAD_REQUEST, OPERAND_OUT_OF_RANGE, "Operand out of range", e.getMessage());
     }
 
     @ExceptionHandler
@@ -55,7 +72,9 @@ class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     protected @Nullable ResponseEntity<Object> handleHttpMessageNotReadable(
             HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         // the parser's own message names internal types, so it is never echoed
-        return invalidRequest("The body is not valid JSON, or an operand is not a number or numeric string.");
+        return invalidRequest(requestLimits
+                .brokenBy(ex)
+                .orElse("The body is not valid JSON, or an operand is not a number or numeric string."));
     }
 
     @Override

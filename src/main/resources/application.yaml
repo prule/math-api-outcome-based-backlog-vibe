@@ -1,0 +1,10 @@
+spring:
+  jackson:
+    factory:
+      constraints:
+        read:
+          # PRD §3.2 request limits: the parser rejects these before building any number
+          max-document-length: 16384
+          max-string-length: 1000
+          max-number-length: 1000
+          max-nesting-depth: 500

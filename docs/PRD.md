@@ -59,7 +59,7 @@ A unary Operation takes no `b`, and its response has no `b` key:
 - `b` is required for a binary Operation and must be omitted (or `null`) for a unary one; otherwise the request is rejected as `invalid-request` (BR-9).
 - `a` and `b` are echoed as received, in plain notation and with their given scale (`1e2` → `"100"`, `"1.50"` → `"1.50"`). Only `result` is normalised (BR-4).
 - Every error response (including framework errors such as 415) is Problem Details with `type`, `title`, `status` and a human-readable `detail` that exposes no internals.
-- Request limits: a body over 16,384 characters, or any JSON string or number over 1,000 characters, is rejected as `invalid-request` before parsing into numbers. Operand limits (BR-1) are reported as `operand-out-of-range`, naming the operand but never echoing its value.
+- Request limits: a body over 16,384 bytes, any JSON string or number over 1,000 characters, or nesting deeper than 500 levels is rejected as `invalid-request` before parsing into numbers, with a `detail` naming the limit broken. Operand limits (BR-1) are reported as `operand-out-of-range`, naming the operand but never echoing its value.
 - Only the first failure is reported, checked in this order: invalid request → unknown operation → operand count (BR-9, reported as invalid request) → operand out of range (BR-1) → invalid exponent (BR-5) → division by zero (BR-2) → negative square root (BR-8) → result out of range (BR-6).
 
 `GET /api/v1/operations` lists the supported Operations, derived from the domain so it always matches what `POST /api/v1/calculations` accepts:
@@ -126,3 +126,4 @@ Path-based (`/api/v1`). Adding an operation is non-breaking and stays in v1. Any
 | Date | Change |
 |------|--------|
 | 2026-11-10 | Copied from math-api (its final v1 docs) for the one-agent rerun with reviews from the start |
+| 2026-11-13 | §3.2 request limits: body limit is in bytes (what the parser counts), nesting depth of 500 made explicit, and the `detail` names the limit broken (backlog item 4) |
