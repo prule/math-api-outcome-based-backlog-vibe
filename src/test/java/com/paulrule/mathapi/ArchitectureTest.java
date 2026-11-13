@@ -12,12 +12,9 @@ import com.tngtech.archunit.lang.ArchRule;
 @AnalyzeClasses(packages = "com.paulrule.mathapi", importOptions = ImportOption.DoNotIncludeTests.class)
 class ArchitectureTest {
 
-    // shortcut: allowEmptyShould/withOptionalLayers let the rules pass while layers are empty, remove once every
-    // layer has a class (item 2)
     @ArchTest
     static final ArchRule layersPointInwards = layeredArchitecture()
             .consideringOnlyDependenciesInLayers()
-            .withOptionalLayers(true)
             .layer("Domain")
             .definedBy("..mathapi.domain..")
             .layer("Application")
@@ -39,8 +36,7 @@ class ArchitectureTest {
             .resideInAPackage("..mathapi.domain..")
             .should()
             .dependOnClassesThat()
-            .resideInAnyPackage("org.springframework..", "jakarta..", "com.fasterxml.jackson..", "tools.jackson..")
-            .allowEmptyShould(true);
+            .resideInAnyPackage("org.springframework..", "jakarta..", "com.fasterxml.jackson..", "tools.jackson..");
 
     @ArchTest
     static final ArchRule applicationHasNoWebOrAdapterTypes = noClasses()
@@ -48,6 +44,5 @@ class ArchitectureTest {
             .resideInAPackage("..mathapi.application..")
             .should()
             .dependOnClassesThat()
-            .resideInAnyPackage("org.springframework.web..", "org.springframework.http..", "..mathapi.adapter..")
-            .allowEmptyShould(true);
+            .resideInAnyPackage("org.springframework.web..", "org.springframework.http..", "..mathapi.adapter..");
 }
