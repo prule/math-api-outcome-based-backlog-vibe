@@ -16,3 +16,12 @@ A stateless REST service for exact decimal arithmetic. See [docs/PRD.md](docs/PR
 Once both builds have finished the same backlog items, both are scanned with SonarQube using the same quality
 profile (bugs, code smells, duplication, cognitive complexity, coverage). Neither build runs Sonar during its own
 process, so the scan is a neutral yardstick, not something either build was tuned against.
+
+## Build and run
+
+Needs JDK 25.
+
+```bash
+./gradlew build     # tests, ArchUnit layer rules, Spotless format check
+./gradlew bootRun   # serves on :8080; health at /actuator/health
+```

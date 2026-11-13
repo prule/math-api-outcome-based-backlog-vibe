@@ -15,16 +15,25 @@ matching doc in `docs/` in the same change, including its change log. Never renu
 
 ## Process
 
-One backlog item at a time, on a branch `feat/<item>` from an up-to-date `main`:
+One backlog item at a time, on a branch `feat/<item>` from an up-to-date `main`.
+
+Run all five steps in one go, from the user's prompt to the merged PR, without pausing between steps. Stop and ask
+only when you cannot go on without the user:
+- a review finding is a real trade-off with no clear answer in the docs (fix the clear ones, then ask about the rest);
+- the item's outcome is ambiguous, or meeting it needs a change to the PRD, the domain rules or the standards that
+  the item does not already call for;
+- CI or the build fails and you cannot find the cause.
+
+A finding you choose not to fix is not a reason to stop: give the reason in the retro.
 
 1. **Build**: the user prompts with the item's outcome from `docs/BACKLOG.md`. You choose the design, within
    `docs/STANDARDS.md`; done when every "We know it's done when" check has a passing test and `./gradlew clean build` passes.
 2. **Review**: run both on the change since `main`:
    - `/ponytail:ponytail-review`: is it correct, safe, tested and minimal?
    - `/code-review`: does it follow `docs/STANDARDS.md` and achieve the backlog item's outcome?
-3. **Fix**: fix every finding from either review, rerun `./gradlew build`.
+3. **Fix**: fix every finding from either review (or record in the retro why not), rerun `./gradlew build`.
 4. **Retro**: run `/ponytail:ponytail-debt`, then write `retrospectives/<n>-<item>.md` with four sections:
-   - **Caught by review**: each finding from both reviews and how it was fixed.
+   - **Caught by review**: each finding from both reviews and how it was fixed, or why it was not.
    - **Surprises**: each failed check or bug found while building, with its cause, or "cause unknown".
    - **Shortcuts taken**: each `shortcut:` comment this item added, with its file, its limit and when to upgrade.
    - **Lessons**: what to do differently next time.
