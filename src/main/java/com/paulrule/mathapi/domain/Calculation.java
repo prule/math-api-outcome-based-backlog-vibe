@@ -6,8 +6,11 @@ import java.util.Objects;
 /** One Operation applied to its Operands. */
 public record Calculation(Operation operation, BigDecimal a, BigDecimal b) {
 
-    private static final int MAX_PRECISION = 100;
-    private static final int MAX_SCALE = 1000;
+    /** BR-1: most significant digits an Operand may have, as written. */
+    public static final int MAX_PRECISION = 100;
+
+    /** BR-1: largest absolute scale an Operand may have, as written. */
+    public static final int MAX_SCALE = 1000;
 
     public Calculation {
         Objects.requireNonNull(operation, "operation");

@@ -31,9 +31,12 @@ public enum Operation {
             if (b.signum() == 0) {
                 throw new DivisionByZeroException(); // BR-2: every zero form has signum 0
             }
-            return a.divide(b, MathContext.DECIMAL128); // BR-3
+            return a.divide(b, ROUNDING);
         }
     };
+
+    /** BR-3: 34 significant digits, half to even, for every Operation that rounds. */
+    public static final MathContext ROUNDING = MathContext.DECIMAL128;
 
     abstract BigDecimal apply(BigDecimal a, BigDecimal b);
 

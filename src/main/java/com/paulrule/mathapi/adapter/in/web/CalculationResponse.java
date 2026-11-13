@@ -4,6 +4,7 @@ import com.paulrule.mathapi.domain.Calculation;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /** Every decimal is a plain-notation string so clients never lose precision (PRD §3.2). */
+@Schema(requiredProperties = {"operation", "a", "b", "result"})
 record CalculationResponse(
         @Schema(example = "DIVIDE") String operation,
 

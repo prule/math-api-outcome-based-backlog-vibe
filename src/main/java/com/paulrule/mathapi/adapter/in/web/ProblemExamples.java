@@ -2,7 +2,8 @@ package com.paulrule.mathapi.adapter.in.web;
 
 /**
  * Problem Details examples for the API docs, one per PRD §3.2 type. The unknown-operation example lists the
- * Operations, so it is generated from the domain in config.OpenApiConfig instead.
+ * Operations, so it is generated from the domain in config.OpenApiConfig instead. ApiDocumentationTest checks each
+ * example against the response the API really sends.
  */
 final class ProblemExamples {
 
@@ -20,7 +21,11 @@ final class ProblemExamples {
 
     static final String UNSUPPORTED_MEDIA_TYPE = """
             {"title": "Unsupported Media Type", "status": 415,
-             "detail": "Content-Type 'text/plain' is not supported.", "instance": "/api/v1/calculations"}""";
+             "detail": "Content-Type 'text/plain;charset=UTF-8' is not supported.", "instance": "/api/v1/calculations"}""";
+
+    static final String NOT_ACCEPTABLE = """
+            {"title": "Not Acceptable", "status": 406, "detail": "Acceptable representations: [application/json].",
+             "instance": "/api/v1/calculations"}""";
 
     static final String UNEXPECTED = """
             {"title": "Internal Server Error", "status": 500, "detail": "Unexpected error.",

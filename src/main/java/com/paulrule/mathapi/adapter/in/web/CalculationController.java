@@ -60,6 +60,15 @@ class CalculationController {
                                             name = "division-by-zero",
                                             value = ProblemExamples.DIVISION_BY_ZERO)))
     @ApiResponse(
+            responseCode = "406",
+            description =
+                    "The client accepts no representation this endpoint produces (send Accept: application/json).",
+            content =
+                    @Content(
+                            mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = ProblemDetail.class),
+                            examples = @ExampleObject(name = "not-acceptable", value = ProblemExamples.NOT_ACCEPTABLE)))
+    @ApiResponse(
             responseCode = "415",
             description = "The body is not application/json.",
             content =

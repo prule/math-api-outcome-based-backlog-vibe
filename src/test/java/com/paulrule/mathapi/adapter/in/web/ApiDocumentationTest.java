@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
+import com.paulrule.mathapi.domain.Calculation;
 import com.paulrule.mathapi.domain.Operation;
 import java.util.Arrays;
 import java.util.List;
@@ -52,6 +53,7 @@ class ApiDocumentationTest {
     @Test
     void servesAnOpenApi31SpecAndAnInteractiveUi() throws Exception {
         assertThat(this.<String>read("$.openapi")).startsWith("3.1");
+        mvc.perform(get("/swagger-ui.html")).andExpect(status().is3xxRedirection());
         mvc.perform(get("/swagger-ui/index.html")).andExpect(status().isOk());
     }
 
@@ -75,12 +77,31 @@ class ApiDocumentationTest {
     }
 
     @Test
+    void documentsTheLimitsAndRoundingTheDomainEnforces() {
+        assertThat(this.<String>read(REQUEST + ".a.description"))
+                .contains("At most " + Calculation.MAX_PRECISION + " significant digits")
+                .contains("±" + Calculation.MAX_SCALE);
+        assertThat(this.<String>read(RESPONSE + ".result.description"))
+                .contains(Operation.ROUNDING.getPrecision() + " significant digits");
+    }
+
+    @Test
+    void documentsTheRequestLimits() {
+        assertThat(this.<String>read(CALCULATIONS + ".responses['400'].description"))
+                .contains("at most 16384 bytes")
+                .contains("at most 1000 characters")
+                .contains("at most 500 levels deep");
+    }
+
+    @Test
     void documentsEveryResponseValueAsAString() {
         for (String field : List.of("operation", "a", "b", "result")) {
             assertThat(this.<String>read(RESPONSE + "." + field + ".type"))
                     .as(field)
                     .isEqualTo("string");
         }
+        assertThat(this.<List<String>>read("$.components.schemas.CalculationResponse.required"))
+                .containsExactlyInAnyOrder("operation", "a", "b", "result");
         assertThat(this.<String>read(CALCULATIONS + ".responses['200'].content['application/json'].schema.$ref"))
                 .endsWith("/CalculationResponse");
     }
@@ -112,22 +133,38 @@ class ApiDocumentationTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"415", "500"})
+    @CsvSource({"406", "415", "500"})
     void documentsFrameworkErrorsAsProblemDetails(String status) {
         assertThat(this.<Map<String, Object>>read(CALCULATIONS + ".responses['" + status + "'].content"))
                 .containsOnlyKeys("application/problem+json");
     }
 
-    @Test
-    void showsTheRealUnknownOperationDetailInItsExample() throws Exception {
+    /** Each example is exactly what the API sends for a request that triggers it, so the docs cannot drift. */
+    @ParameterizedTest(name = "{1}")
+    @CsvSource(
+            delimiter = '|',
+            value = {
+                "400 | invalid-request        | application/json | {\"operation\":\"ADD\",\"a\":1}",
+                "400 | unknown-operation      | application/json | {\"operation\":\"FROBNICATE\",\"a\":1,\"b\":2}",
+                "400 | operand-out-of-range   | application/json | {\"operation\":\"ADD\",\"a\":\"1E+1001\",\"b\":2}",
+                "422 | division-by-zero       | application/json | {\"operation\":\"DIVIDE\",\"a\":1,\"b\":0}",
+                "415 | unsupported-media-type | text/plain       | 1 + 2",
+                "406 | not-acceptable         | application/json | {\"operation\":\"ADD\",\"a\":1,\"b\":2}",
+            })
+    void showsTheRealResponseInEachExample(int status, String example, String contentType, String body)
+            throws Exception {
+        // a 406 is what a client gets when it asks for a representation this endpoint never produces
+        String accept = status == 406 ? MediaType.TEXT_PLAIN_VALUE : MediaType.ALL_VALUE;
         String actual = mvc.perform(post("/api/v1/calculations")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"operation\":\"FROBNICATE\",\"a\":1,\"b\":2}"))
+                        .contentType(contentType)
+                        .accept(accept)
+                        .content(body))
+                .andExpect(status().is(status))
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
-        String documented = read(CALCULATIONS
-                + ".responses['400'].content['application/problem+json'].examples['unknown-operation'].value.detail");
-        assertThat(documented).isEqualTo(JsonPath.read(actual, "$.detail"));
+        Map<String, Object> documented = read(CALCULATIONS + ".responses['" + status
+                + "'].content['application/problem+json'].examples['" + example + "'].value");
+        assertThat(documented).isEqualTo(JsonPath.read(actual, "$"));
     }
 }
