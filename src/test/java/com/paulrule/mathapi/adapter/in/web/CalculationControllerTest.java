@@ -7,6 +7,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.paulrule.mathapi.config.UseCaseConfig;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -72,8 +74,17 @@ class CalculationControllerTest {
     }
 
     @Test
-    void rejectsDivisionByZeroAsUnprocessable_BR2() throws Exception {
-        expectProblem(postJson("{\"operation\":\"DIVIDE\",\"a\":1,\"b\":\"0.00\"}"), 422, "/problems/division-by-zero");
+    void dividesExactlyWhenTheResultFits() throws Exception {
+        postJson("{\"operation\":\"DIVIDE\",\"a\":1,\"b\":4}")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").value("0.25"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"0", "\"0\"", "0.00", "\"0.00\"", "-0", "\"-0\""})
+    void rejectsDivisionByAnyZeroAsUnprocessable_BR2(String zero) throws Exception {
+        expectProblem(
+                postJson("{\"operation\":\"DIVIDE\",\"a\":1,\"b\":" + zero + "}"), 422, "/problems/division-by-zero");
     }
 
     @Test
