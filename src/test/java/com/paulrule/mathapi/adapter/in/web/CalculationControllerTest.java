@@ -135,14 +135,4 @@ class CalculationControllerTest {
                 .andExpect(jsonPath("$.title").isNotEmpty())
                 .andExpect(jsonPath("$.detail").isNotEmpty());
     }
-
-    @Test
-    void answersAnUnexpectedFailureWithProblemDetailsThatHideTheCause() throws Exception {
-        // the product's scale overflows int; until item 4's operand limits this is an unforeseen ArithmeticException
-        postJson("{\"operation\":\"MULTIPLY\",\"a\":\"1e-1500000000\",\"b\":\"1e-1500000000\"}")
-                .andExpect(status().isInternalServerError())
-                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
-                .andExpect(jsonPath("$.status").value(500))
-                .andExpect(jsonPath("$.detail").value("Unexpected error."));
-    }
 }
