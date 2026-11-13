@@ -13,7 +13,7 @@
 | # | Outcome | Status | PR |
 |---|---------|--------|----|
 | 1 | Developers can build, check and ship the service | Done | #1 |
-| 2 | Clients get exact results for add, subtract and multiply | Not started | |
+| 2 | Clients get exact results for add, subtract and multiply | In progress | |
 | 3 | Clients can divide | Not started | |
 | 4 | Hostile operands cannot take the service down | Not started | |
 | 5 | Developers can integrate from the API docs alone | Not started | |
